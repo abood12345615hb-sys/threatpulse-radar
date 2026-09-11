@@ -28,10 +28,10 @@ export const authService = {
         // Fallback to basic session info if profile is not found or fails
         return {
           id: session.user.id,
-          fullName: session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "User",
+          fullName: session.user.user_metadata?.['full_name'] || session.user.email?.split("@")[0] || "User",
           email: session.user.email!,
-          phone: session.user.user_metadata?.whatsapp_number || "",
-          whatsappAlerts: session.user.user_metadata?.whatsapp_alerts_enabled || false,
+          phone: session.user.user_metadata?.['whatsapp_number'] || "",
+          whatsappAlerts: session.user.user_metadata?.['whatsapp_alerts_enabled'] || false,
           role: "analyst",
         };
       }

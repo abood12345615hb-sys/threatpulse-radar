@@ -43,7 +43,7 @@ export function ThreatGlobe({
   nodes,
   interactive = true,
 }: {
-  nodes?: GlobeNode[];
+  nodes?: GlobeNode[] | undefined;
   interactive?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
