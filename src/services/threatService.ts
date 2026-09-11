@@ -523,12 +523,18 @@ export const threatService = {
       }
 
       // 4. Send via Zavu Unified API
+      const zavuSender = (import.meta as any).env?.['VITE_ZAVU_SENDER_ID'] || "";
+      const headers: Record<string, string> = {
+        Authorization: `Bearer ${zavuKey}`,
+        "Content-Type": "application/json",
+      };
+      if (zavuSender && typeof zavuSender === "string" && zavuSender.trim()) {
+        headers["Zavu-Sender"] = zavuSender.trim();
+      }
+
       const res = await fetch("https://api.zavu.dev/v1/messages", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${zavuKey}`,
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           to: phone,
           channel: "whatsapp",
@@ -537,9 +543,15 @@ export const threatService = {
       });
 
       if (!res.ok) {
-        const errText = await res.text();
+        let errText = "";
+        try {
+          const errJson = await res.json();
+          errText = errJson.message || JSON.stringify(errJson);
+        } catch {
+          errText = await res.text();
+        }
         console.warn("Zavu API error:", res.status, errText);
-        return { sent: false, reason: `zavu_http_${res.status}` };
+        return { sent: false, reason: errText || `zavu_http_${res.status}` };
       }
 
       console.log(`[Zavu Gateway] WhatsApp alert sent successfully to ${phone}!`);
