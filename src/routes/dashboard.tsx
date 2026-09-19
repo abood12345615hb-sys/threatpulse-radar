@@ -82,6 +82,24 @@ function DashboardPage() {
   useEffect(() => {
     setMounted(true);
     setDeletedTargets(threatService.getDeletedTargets());
+
+    // Purge any legacy unrequested mock google.com scan from browser local storage
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("threatpulse_live_scans");
+        if (raw) {
+          const parsed: ScanResult[] = JSON.parse(raw);
+          const filtered = parsed.filter(
+            (s) => !(s.indicator.trim().toLowerCase() === "google.com" && s.riskScore === 97)
+          );
+          if (filtered.length !== parsed.length) {
+            localStorage.setItem("threatpulse_live_scans", JSON.stringify(filtered));
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
   }, []);
 
   const history = useQuery({
@@ -92,21 +110,30 @@ function DashboardPage() {
   // Automatically detect the active indicator:
   // 1. From URL param `q` if provided
   // 2. Otherwise pick the most recent scan from local storage or history
-  // 3. Fallback only if history is completely empty
+  // 3. Fallback to empty string if history is completely empty (no mock default)
   const activeIndicator = useMemo(() => {
     if (q && q.trim().length > 1) return q.trim();
     const local = threatService.getLocalScans();
-    const validLocal = local.find((s) => !deletedTargets.has(s.indicator.trim().toLowerCase()));
+    const validLocal = local.find(
+      (s) =>
+        !deletedTargets.has(s.indicator.trim().toLowerCase()) &&
+        !(s.indicator.trim().toLowerCase() === "google.com" && s.riskScore === 97)
+    );
     if (validLocal) return validLocal.indicator;
     const historyList = history.data ?? [];
-    const validHistory = historyList.find((h) => !deletedTargets.has(h.indicator.trim().toLowerCase()));
+    const validHistory = historyList.find(
+      (h) =>
+        !deletedTargets.has(h.indicator.trim().toLowerCase()) &&
+        !(h.indicator.trim().toLowerCase() === "google.com" && h.riskScore === 97)
+    );
     if (validHistory) return validHistory.indicator;
-    return "google.com";
+    return "";
   }, [q, history.data, deletedTargets]);
 
   const scanQuery = useQuery({
     queryKey: ["scan", activeIndicator],
     queryFn: () => threatService.scan(activeIndicator),
+    enabled: Boolean(activeIndicator && activeIndicator.trim().length > 0),
     staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 
@@ -117,7 +144,10 @@ function DashboardPage() {
     }
   }, [scanQuery.data]);
 
-  const active: ScanResult = scanQuery.data ?? (scanQuery.isError ? buildFallbackScan(activeIndicator) : null as any);
+  const active: ScanResult | null =
+    activeIndicator && activeIndicator.trim().length > 0
+      ? (scanQuery.data ?? (scanQuery.isError ? buildFallbackScan(activeIndicator) : null))
+      : null;
 
   const rows = useMemo(() => {
     const historyList = (history.data ?? []).filter(
@@ -246,7 +276,7 @@ function DashboardPage() {
       queryClient.removeQueries({ queryKey: ["scan", clean] });
 
       // 3. If the deleted scan was the active scan, switch to next available scan
-      if (activeIndicator.trim().toLowerCase() === clean) {
+      if (activeIndicator && activeIndicator.trim().toLowerCase() === clean) {
         const remaining = rows.filter((r) => r.indicator.trim().toLowerCase() !== clean);
         if (remaining.length > 0 && remaining[0]?.indicator) {
           navigate({ to: "/dashboard", search: { q: remaining[0].indicator } });
@@ -639,8 +669,12 @@ function DashboardPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("nav_dashboard")}</h1>
-          <p className="mt-1 font-mono text-xs text-muted-foreground" dir="ltr">
-            {active ? `${active.indicator} · ${active.asn} · ${active.country}` : activeIndicator}
+          <p className="mt-1 text-xs text-muted-foreground" dir={active ? "ltr" : undefined}>
+            {active
+              ? `${active.indicator} · ${active.asn} · ${active.country}`
+              : (lang === "ar"
+                  ? "مركز الرصد والتشخيص الأمني السيبراني"
+                  : "Threat Intelligence & Security Audit Center")}
           </p>
         </div>
         <Button asChild variant="default" className="shadow-lg shadow-primary/20">
@@ -725,7 +759,7 @@ function DashboardPage() {
         )}
       </div>
 
-      {scanQuery.isPending && !active ? (
+      {scanQuery.isPending && !active && activeIndicator ? (
         <div className="mt-8 rounded-2xl glass-panel p-12 text-center flex flex-col items-center justify-center min-h-[350px]">
           <div className="relative mb-6">
             <div className="size-20 rounded-full border-2 border-primary/30 animate-ping absolute inset-0" />
@@ -1034,7 +1068,40 @@ function DashboardPage() {
           </section>
         </div>
       </>
-      ) : null}
+      ) : (
+        /* بطاقة حالة الاستعداد عندما لا يكون هناك أي فحص مسجل */
+        <div className="mt-6 rounded-2xl glass-panel p-8 sm:p-12 text-center flex flex-col items-center justify-center border border-dashed border-border/80 min-h-[300px]">
+          <div className="size-16 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-center mb-4 shadow-inner">
+            <ShieldCheck className="size-8 text-primary" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2 text-foreground">
+            {lang === "ar" ? "جاهز للبدء في الفحص والتشخيص الأمني" : "Ready for Security Audit"}
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-lg mb-6 leading-relaxed">
+            {lang === "ar"
+              ? "سجل الفحوصات فارغ حالياً. قم بإدخال اسم موقعك أو أي نطاق/رابط في شريط الفحص بالأعلى للحصول على تشخيص أمني متكامل، وفحص شهادات SSL، والتحقق عبر أكثر من 89 محرك حماية دولي."
+              : "Scan history is currently empty. Enter your domain, URL, or IP address in the search bar above to generate a comprehensive security audit and threat report."}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button
+              onClick={() => {
+                const el = document.querySelector('input[dir="ltr"]') as HTMLInputElement;
+                if (el) {
+                  el.focus();
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }}
+              className="gap-2 shadow-md shadow-primary/20"
+            >
+              <Search className="size-4" />
+              {lang === "ar" ? "ابدأ أول فحص الآن" : "Start First Scan Now"}
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/">{lang === "ar" ? "رادار التهديدات الرئيسي" : "Main Threat Radar"}</Link>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* جدول سجل الفحوصات */}
       <section className="glass-panel mt-6 rounded-2xl p-5">
@@ -1050,7 +1117,7 @@ function DashboardPage() {
             />
           </div>
           {/* Updated Button Hierarchy: Secondary/Outline for Export CSV */}
-          <Button variant="outline" size="sm" onClick={exportCsv} className="h-9">
+          <Button variant="outline" size="sm" onClick={exportCsv} className="h-9" disabled={rows.length === 0}>
             <Download className="size-4 me-2" />
             {t("export_csv")}
           </Button>
@@ -1063,7 +1130,22 @@ function DashboardPage() {
             <Skeleton className="h-10 w-full" />
           </div>
         ) : rows.length === 0 ? (
-          <p className="mt-6 text-sm text-muted-foreground">{t("no_results")}</p>
+          <div className="py-12 text-center">
+            <ShieldCheck className="mx-auto size-10 text-muted-foreground/30 mb-3" />
+            <p className="text-sm font-medium text-foreground">
+              {filter
+                ? t("no_results")
+                : (lang === "ar"
+                    ? "لا توجد عمليات فحص مسجلة حتى الآن."
+                    : "No scan records found.")}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              {!filter &&
+                (lang === "ar"
+                  ? "ابدأ بفحص موقعك أو أي رابط من شريط البحث أعلاه وسيتم حفظه تلقائياً في هذا السجل."
+                  : "Start by entering a URL or domain in the search bar above to generate and track reports.")}
+            </p>
+          </div>
         ) : (
           <>
             <div className="hidden overflow-x-auto md:block">
@@ -1080,7 +1162,10 @@ function DashboardPage() {
                 </thead>
                 <tbody>
                   {rows.map((r) => {
-                    const isActive = r.indicator.trim().toLowerCase() === activeIndicator.trim().toLowerCase();
+                    const isActive = Boolean(
+                      activeIndicator &&
+                        r.indicator.trim().toLowerCase() === activeIndicator.trim().toLowerCase()
+                    );
                     return (
                       <tr
                         key={r.id}
@@ -1208,7 +1293,10 @@ function DashboardPage() {
 
             <div className="space-y-3 md:hidden">
               {rows.map((r) => {
-                const isActive = r.indicator.trim().toLowerCase() === activeIndicator.trim().toLowerCase();
+                const isActive = Boolean(
+                  activeIndicator &&
+                    r.indicator.trim().toLowerCase() === activeIndicator.trim().toLowerCase()
+                );
                 return (
                   <div
                     key={r.id}

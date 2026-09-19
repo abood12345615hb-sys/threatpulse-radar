@@ -90,7 +90,14 @@ export function getLocalScans(): ScanResult[] {
     const deleted = getDeletedTargets();
     const raw = localStorage.getItem(LOCAL_STORAGE_SCANS_KEY);
     const scans: ScanResult[] = raw ? JSON.parse(raw) : [];
-    return scans.filter((s) => !deleted.has(s.indicator.trim().toLowerCase()));
+    return scans.filter((s) => {
+      const key = s.indicator.trim().toLowerCase();
+      if (deleted.has(key)) return false;
+      if (key === "google.com" && (s.riskScore === 97 || s.classification?.includes("Phishing"))) {
+        return false;
+      }
+      return true;
+    });
   } catch {
     return [];
   }
@@ -480,7 +487,10 @@ export const threatService = {
 
   // Perform full scan
   async scan(indicator: string): Promise<ScanResult> {
-    const raw = indicator.trim();
+    const raw = (indicator || "").trim();
+    if (!raw) {
+      throw new Error("Target indicator cannot be empty");
+    }
     const type = detectType(raw);
 
     // Check if recently scanned in local storage (within 5 minutes)
@@ -1117,12 +1127,15 @@ export const threatService = {
         }
       }
 
-      // Merge and deduplicate by indicator, filtering out deleted targets
+      // Merge and deduplicate by indicator, filtering out deleted targets and mock defaults
       const seen = new Set<string>();
       const deleted = getDeletedTargets();
       const combined: ScanResult[] = [];
       for (const item of [...dbScans, ...local]) {
         const key = item.indicator.trim().toLowerCase();
+        if (key === "google.com" && (item.riskScore === 97 || item.classification?.includes("Phishing"))) {
+          continue;
+        }
         if (!seen.has(key) && !deleted.has(key)) {
           seen.add(key);
           combined.push(item);
@@ -1132,7 +1145,13 @@ export const threatService = {
       return combined;
     } catch {
       const deleted = getDeletedTargets();
-      return local.filter((item) => !deleted.has(item.indicator.trim().toLowerCase()));
+      return local.filter((item) => {
+        const key = item.indicator.trim().toLowerCase();
+        if (key === "google.com" && (item.riskScore === 97 || item.classification?.includes("Phishing"))) {
+          return false;
+        }
+        return !deleted.has(key);
+      });
     }
   },
 
