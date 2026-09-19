@@ -1,11 +1,18 @@
 export type Verdict = "clean" | "suspicious" | "malicious";
 
 export interface ProviderResult {
-  name: "VirusTotal" | "URLhaus" | "AbuseIPDB";
+  name: string;
   verdict: Verdict;
   detections: number;
   total: number;
   lastSeen: string;
+}
+
+export interface SecurityDiagnosis {
+  summaryText: string;
+  statusBadge: string;
+  engineerNotes: string[];
+  visitorNotes: string[];
 }
 
 export interface ScanResult {
@@ -22,6 +29,7 @@ export interface ScanResult {
   classification?: string;
   mitreTactic?: string;
   recommendations?: string[];
+  diagnosis?: SecurityDiagnosis;
   screenshotUrl?: string;
   whois?: { registrar: string; created: string; expires: string; };
   ssl?: { issuer: string; valid: boolean; selfSigned: boolean; };

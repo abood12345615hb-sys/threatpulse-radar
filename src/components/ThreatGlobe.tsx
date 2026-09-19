@@ -58,13 +58,13 @@ export function ThreatGlobe({
     if (nodes && nodes.length > 0) return nodes;
     return [
       { id: "sa-1", label: "Riyadh SOC Gateway", lat: 24.7, lon: 46.7, severity: "clean" },
-      { id: "us-1", label: "US East (Ashburn)", lat: 39.0, lon: -77.5, severity: "clean" },
-      { id: "de-1", label: "Frankfurt Relay", lat: 50.1, lon: 8.7, severity: "malicious" },
-      { id: "ru-1", label: "Moscow C2 Node", lat: 55.7, lon: 37.6, severity: "malicious" },
-      { id: "nl-1", label: "Amsterdam Tor Exit", lat: 52.4, lon: 4.9, severity: "suspicious" },
-      { id: "cn-1", label: "Shanghai Botnet", lat: 31.2, lon: 121.5, severity: "malicious" },
-      { id: "ae-1", label: "Dubai Sensor", lat: 25.2, lon: 55.3, severity: "clean" },
       { id: "ye-1", label: "Sanaa Telemetry Edge", lat: 15.3, lon: 44.2, severity: "clean" },
+      { id: "ae-1", label: "Dubai CTI Hub", lat: 25.2, lon: 55.3, severity: "clean" },
+      { id: "us-1", label: "US East (Ashburn)", lat: 39.0, lon: -77.5, severity: "clean" },
+      { id: "de-1", label: "Frankfurt Edge", lat: 50.1, lon: 8.7, severity: "clean" },
+      { id: "gb-1", label: "London Sensor", lat: 51.5, lon: -0.12, severity: "clean" },
+      { id: "jp-1", label: "Tokyo Telemetry Node", lat: 35.6, lon: 139.6, severity: "clean" },
+      { id: "sg-1", label: "Singapore Gateway", lat: 1.35, lon: 103.8, severity: "clean" },
     ];
   }, [nodes]);
 

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Activity, Globe2, LogOut, Menu, Moon, ShieldAlert, Sun } from "lucide-react";
+import { Activity, Globe2, LogOut, Menu, MessageSquare, Moon, ShieldAlert, Sun } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -50,6 +50,14 @@ export function SiteHeader() {
             <span className="size-1.5 animate-blink rounded-full bg-emerald" />
             SOC live
           </span>
+          <Link
+            to="/dashboard"
+            className="hidden items-center gap-1.5 rounded-full border border-emerald/30 bg-emerald/10 px-2.5 py-1 text-xs font-medium text-emerald transition hover:bg-emerald/20 sm:inline-flex"
+            title={lang === "ar" ? "تنبيهات واتساب الفورية مفعلة ومربوطة" : "Instant WhatsApp Alerts Active"}
+          >
+            <MessageSquare className="size-3.5" />
+            <span>WhatsApp Alerts</span>
+          </Link>
           <Button variant="ghost" size="icon" onClick={toggleLang} aria-label="Switch language">
             <Globe2 className="size-4" />
             <span className="sr-only">{lang}</span>
