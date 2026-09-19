@@ -19,8 +19,9 @@ dist-ssr
 .env.*
 !.env.example
 
-# Wrangler / Cloudflare
+# Wrangler / Cloudflare / Vercel
 .wrangler/
+.vercel
 .dev.vars
 
 # Editor directories and files

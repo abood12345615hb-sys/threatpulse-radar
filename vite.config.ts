@@ -33,7 +33,15 @@ export default defineConfig(({ command }) => ({
         },
       },
     }),
-    ...(command === "build" ? [nitro({ defaultPreset: "cloudflare-module" })] : []),
+    ...(command === "build"
+      ? [
+          nitro({
+            ...(process.env["VERCEL"] || process.env["NITRO_PRESET"] === "vercel"
+              ? { preset: "vercel" }
+              : { defaultPreset: "cloudflare-module" }),
+          }),
+        ]
+      : []),
     react(),
   ],
 }));
