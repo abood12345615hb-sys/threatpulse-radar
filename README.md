@@ -1,142 +1,142 @@
-# ThreatPulse Sentinel
+# 🛡️ منصة ThreatPulse Radar CTI للأمن السيبراني واستخبارات التهديدات
 
-Build a production-ready, fully responsive, and interactive Cyber Threat Intelligence (CTI) web application called "ThreatPulse CTI". 
-
-
-
-The platform must adopt an elite Cyber SOC Dark Mode theme (with a High-Tech Light mode switch), 3D data visualizations, smooth micro-interactions, full Arabic (RTL) & English (LTR) bilingual support, and a complete user-conversion funnel including Phone/WhatsApp registration for automated security alerts.
-
-
+منصة متكاملة ومتقدمة في استخبارات التهديدات السيبرانية (**Cyber Threat Intelligence - CTI**) تتيح للمؤسسات ومسؤولي المواقع والمستخدمين فحص وتدقيق الروابط والنطاقات وعناوين الـ IP الحية في لحظتها، مع تكاملات تنبيهات فورية عبر **WhatsApp**، وتحليلات ثلاثية الأبعاد تفاعلية، وتشخيص أمني مزدوج يخدم كلاً من المهندس التقني والإداري غير المتخصص.
 
 ---
 
+## 🌟 أبرز مميزات المنصة
 
-
-### 🛠️ 1. Technical Stack & Architecture
-
-- **Framework:** Next.js (App Router) / React with TypeScript.
-
-- **Styling:** Tailwind CSS with Lucide React icons.
-
-- **Animations & 3D:** Framer Motion (or lightweight CSS animations) and Three.js / Canvas / Recharts for 3D analytical charts.
-
-- **State Management & Modular Services:** Clean separation of concerns with context providers (`LanguageContext`, `ThemeContext`, `AuthContext`) and modular mock API services (`threatService.ts`, `authService.ts`) ready for Supabase integration.
-
-
+- ⚡ **فحص سيبراني شامل ومباشر:** ربط حقيقي مع محرك **VirusTotal v3 API** وأكثر من 89 محرك فحص دولي، مع تغذيات استخباراتية إضافية (Google Safe Browsing, Kaspersky, URLhaus).
+- 📲 **نظام تنبيهات WhatsApp الفوري (CTI SOC Alerting):** ربط متكامل مع بوابة **Zavu API** لإرسال إنذارات التهديدات الحرجة تلقائياً إلى هواتف المدراء والمشتركين، مع إمكانية إرسال تقرير فحص أي موقع مباشرة بنقرة زر.
+- 🌐 **الكرة الأرضية التفاعلية ثلاثية الأبعاد (3D Threat Globe):** استعراض حي لمواقع الخوادم المستهدفة ومصادر التهديد وتوزع بوابات مراكز العمليات (SOC Gateways) إقليمياً ودولياً.
+- 🕸️ **الرسم البياني للتهديدات (Threat Graph Topology):** محاكاة تفاعلية لعلاقات التهديد تربط المؤشر بمسار الهجوم وتصنيفات مصفوفة **MITRE ATT&CK** ورقم شبكة الاستضافة (ASN).
+- 📄 **تصدير تقارير أمنية احترافية (PDF & Excel):** توليد تقارير أمنية رسمية معتمدة بشعار المنصة ودرجة السرية (TLP:AMBER+STRICT)، إضافة إلى تصدير ملفات Excel مشفرة بـ UTF-8 BOM لقراءة اللغة العربية بامتياز.
+- 🌍 **دعم ثنائي كامل للغات والواجهات:** تصميم مرن يدعم اللغة العربية (RTL) والإنجليزية (LTR) بالكامل، مع وضع ليلي سيبراني (Cyber Dark Mode) ووضع نهاري عالي الدقة (High-Tech Light Mode).
 
 ---
 
+## 🚀 التعديلات والترقيات الأخيرة (Changelog & Recent Updates)
 
+تم تنفيذ حزمة ترقيات جوهرية لتحسين تجربة المستخدم والمعمارية البرمجية للمنصة:
 
-### 🎨 2. Visual Design System & Themes
+### 1. الحل الجذري والنهائي لحذف الفحوصات من السجل
+- **إصلاح أذونات قاعدة البيانات:** إضافة سياسات `DELETE` المفقودة في نظام الحماية على مستوى الصفوف (Row Level Security - RLS) في Supabase لجدول `scans`.
+- **معالجة معرّفات الـ UUID بأمان:** فحص نوع المعرف قبل حذفه من قاعدة البيانات لمنع أخطاء الـ Syntax في PostgreSQL، والاعتماد على مطابقة اسم الرابط بدقة (`target.ilike`) لضمان تنظيف كافة السجلات المرتبطة.
+- **نظام شواهد الحذف الدائمة (Tombstone Tracking):** تتبع أي رابط يتم حذفه وتخزينه في `threatpulse_deleted_targets`، مما يمنع إحياء أو عودة السجل عند تحديث الصفحة.
+- **تحديث الذاكرة المؤقتة لحظياً (Optimistic Cache Purge):** مسح العنصر المحذوف فوراً من كاش `TanStack React Query` دون وميض في الواجهة ودون الحاجة لإعادة تحميل المتصفح.
 
-- **Theme Modes:**
+### 2. تزامن كامل لوحة التحكم لحظياً مع آخر فحص ومع السجل
+- **التحميل التلقائي لأحدث فحص:** عند الدخول إلى شاشة التحليل (`/dashboard`) بدون معلمات بحث، يتم تلقائياً عرض وتحليل **آخر موقع قام المستخدم بفحصه**، بدلاً من عرض أهداف افتراضية.
+- **تحويل اللوحة بالكامل عند النقر على أي موقع:** بمجرد الضغط على أي صف في السجل أو زر "تحليل" (`Activity`)، يتم تحديث كامل عناصر اللوحة في ثانية واحدة (مؤشر الخطر، الأركان الأربعة، لقطة الشاشة الآمنة، محركات الفحص، الرسم البياني، والكرة الأرضية).
+- **التمرير الذكي وشارة الهدف النشط:** تصعد الصفحة تلقائياً إلى الأعلى بسلاسة لتقديم البيانات الكاملة للموقع، مع إظهار شارة مميزة نابضة بعنوان **`الهدف النشط (Active)`** في جدول الفحوصات.
 
-  - **Cyber Dark Mode (Default):** Deep Slate/Void background (`#080C14` / `#0D1527`), glowing neon accents (Cyan `#00F0FF`, Crimson `#FF0055`, Emerald `#10B981`), and frosted glassmorphism borders (`border-slate-700/40`).
+### 3. التشخيص الأمني الموحد والمتوازن (للمهندس وللإداري دون إفزاع)
+تجنبت المنصة الحلول الشكلية كإضافة أنماط أو أزرار تحويل منفصلة، وقامت بدمج الرؤية المزدوجة مباشرة في صميم التصميم الأصلي:
+- **لغة تشخيصية مطمئنة وموضوعية:** الابتعاد عن التهويل في حال وجود ملاحظات تكوين بسيطة؛ مع إظهار شارة حالة واضحة مثل `فحص معتمد وسليم (Certified Safe)` أو `يحتاج تدقيق وضبط إعدادات (Needs Configuration)`.
+- **الأركان الأمنية الأربعة المباشرة:**
+  1. **شهادة التشفير والأمان (SSL/TLS):** حالة الشهادة والجهة المصدرة وضمان تشفير بيانات الزوار.
+  2. **السمعة في محركات الفحص:** النتيجة التفصيلية في أكثر من 89 محرك حماية دولي.
+  3. **خادم ومزود الاستضافة:** رقم الشبكة المستقلة (ASN) وموقع السيرفر الجغرافي.
+  4. **ملكية وتسجيل النطاق:** بيانات الـ WHOIS وتاريخ الإنشاء والصلاحية.
+- **خريطة الإرشاد المزدوجة:**
+  - 🛠️ **لمسؤول الموقع والمهندس:** خطوات تقنية ملموسة (تجديد شهادة SSL، ضبط بروتوكولات TLS 1.3، تفعيل HSTS و DNSSEC، فحص الكود من الحقن الخبيث، وخطوات طلب إلغاء الإدراج Delist Request من Google و VirusTotal بعد المعالجة).
+  - 💼 **للمدير والموظف الإداري والعميل:** إرشادات سلسة ومبسطة توضح مدى أمان تصفح الموقع وإجراء المعاملات دون خوف.
 
-  - **Clean High-Tech Light Mode:** Crisp light background (`#F8FAFC`), subtle ambient shadows, clean slate borders, and electric blue/emerald accents.
-
-- **Typography:** Monospace font for IOCs/IPs/URLs (`JetBrains Mono` / `Fira Code`) and clean sans-serif for UI (`Inter` for English, `Cairo` or `Tajawal` for Arabic).
-
-
-
----
-
-
-
-### 🔄 3. Visitor Journey & WhatsApp Alert Onboarding
-
-- **Interactive Scanner on Home Page:** 
-
-  - An input field to paste URLs or IP addresses.
-
-  - Clicking "Scan Threat / فحص التهديد" triggers a dynamic 360° glowing Radar Sweep animation.
-
-- **Gated Conversion / Auth Gateway:**
-
-  - Once the radar scan completes (after ~2 seconds), prompt or redirect the user to the Authentication / Registration Gateway to reveal the full OSINT breakdown.
-
-- **Registration Form with WhatsApp Integration:**
-
-  - Form Fields: Full Name, Email, Password, and **Phone Number with Country Code Selector & WhatsApp Alert Opt-In checkbox**.
-
-  - Value Proposition Callout: *"Register your WhatsApp number to receive instant, real-time automated security alerts when critical threats are detected."* / *"سجّل رقم هاتفك لتفعيل التنبيهات الفورية عبر واتساب عند رصد تهديدات حرجة."*
-
-  - Seamless toggle between Login and Register.
-
-
+### 4. تقرير أمني رسمي بصيغة PDF
+- تصميم نافذة طباعة وتصدير PDF أنيقة ومعدة للطابعات ومراسلات الإدارة.
+- يتضمن التقرير ترويسة أمنية رسمية، ومؤشر الخطر، والتشخيص الأمني الشامل، وجدولي إرشادات المهندس والإداري، وتفاصيل الكشف المتعدد وشهادات التشفير والتوصيات الدفاعية.
 
 ---
 
+## 🛠️ البنية البرمجية والمعمارية (Tech Stack)
 
-
-### 📊 4. 3D Analytics & Core Dashboard Views
-
-
-
-#### A. Public Landing Page (`/`)
-
-- Cyber hero banner with live grid background.
-
-- URL/IP indicator search bar with glowing sweep animation.
-
-- Feature highlight cards (Multi-source Aggregation, WhatsApp Instant Alerts, Real-time SOC feeds).
-
-
-
-#### B. User Dashboard & Scan Results (`/dashboard`)
-
-- **Animated Risk Gauge (0–100):** Visual speedometer shifting colors dynamically (0–30 Green, 31–70 Orange, 71–100 Crimson).
-
-- **Aggregated OSINT Provider Badges:** Status breakdowns for VirusTotal, URLhaus, and AbuseIPDB.
-
-- **3D Threat Analytics:** 3D bar/area charts visualizing threat volume and an interactive rotating 3D globe/node visualizer.
-
-- **Scan History Table:** Filterable table with quick-copy IOC tools and export options (collapses into responsive cards on mobile).
-
-
-
-#### C. Admin SOC Panel (`/admin`)
-
-- Live simulated threat log terminal with flashing realtime indicators.
-
-- WhatsApp Alert Monitor status card: *"WhatsApp Alert Service: Active & Connected"*.
-
-- API keys configuration and user management controls.
-
-
+| المجال | التقنيات المستخدمة |
+|---|---|
+| **بيئة التشغيل والخادم** | [TanStack Start](https://tanstack.com/start) (SSR) + [Vite](https://vitejs.dev/) + [Nitro Server](https://nitro.unjs.io/) |
+| **واجهة المستخدم** | [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) |
+| **التصميم والأنماط** | [Tailwind CSS v4](https://tailwindcss.com/) + [Radix UI](https://www.radix-ui.com/) + [Lucide React](https://lucide.dev/) |
+| **إدارة البيانات والحالة** | [TanStack React Query](https://tanstack.com/query) + [Supabase JS](https://supabase.com/) |
+| **الاستخبارات السيبرانية** | [VirusTotal v3 REST API](https://developers.virustotal.com/reference/overview) |
+| **خدمة تنبيهات الواتساب** | [Zavu WhatsApp API Gateway](https://zavu.dev) |
+| **الرسوم ثلاثية الأبعاد** | HTML5 Canvas + WebGL 3D Math Engine |
 
 ---
 
+## 📂 هيكل المجلدات الرئيسي
 
-
-### 🌐 5. Internationalization (i18n) & Multi-Device Responsiveness
-
-- **Bidirectional Support:** Full instant switching between English (LTR) and Arabic (RTL), properly mirroring icons, navigation drawers, layout columns, and text alignment.
-
-- **Responsive Breakpoints:** Optimized for Mobile (375px+), Tablets (768px+), and Desktop/Ultrawide displays with collapsible sidebars and touch-friendly targets.
-
-
+```text
+├── src/
+│   ├── components/            # مكونات الواجهة (Globe, Graph, Gauges, Header, Modals)
+│   ├── contexts/              # سياقات التطبيق (AuthContext, LanguageContext, ThemeContext)
+│   ├── routes/                # مسارات TanStack Router (الرئيسية، اللوحة، الإدارة، المصادقة)
+│   │   ├── index.tsx          # الصفحة الرئيسية وشريط الفحص والكرة ثلاثية الأبعاد
+│   │   ├── dashboard.tsx      # شاشة التحليل الشاملة وسجل الفحوصات وتصدير PDF
+│   │   ├── admin.tsx          # مركز عمليات SOC لإدارة مفاتيح API وسجلات النظام
+│   │   └── auth.tsx           # بوابات الدخول وتسجيل حسابات الواتساب
+│   ├── services/
+│   │   └── threatService.ts   # محرك المنصة: استعلامات VirusTotal، تنبيهات Zavu، وإدارة السجل
+│   ├── types/                 # تعريفات TypeScript للأنماط والتشخيص الأمني والنتائج
+│   └── lib/                   # عميل Supabase ومكتبات الدعم
+├── supabase_schema.sql        # مخطط قاعدة البيانات وسياسات الأمان RLS
+└── package.json
+```
 
 ---
 
+## ⚙️ متطلبات التشغيل والتثبيت محلياً (Local Setup)
 
+### 1. استنساخ المستودع:
+```bash
+git clone https://github.com/abood12345615hb-sys/threatpulse-radar.git
+cd threatpulse-radar
+```
 
-### 🚀 6. Execution Instructions for Manus
+### 2. تثبيت الحزم والمكتبات:
+```bash
+npm install
+```
 
-1. Scaffold the folder structure cleanly (`components/`, `contexts/`, `services/`, `types/`, `styles/`).
+### 3. إعداد متغيرات البيئة (`.env`):
+قم بإنشاء ملف `.env` في المجلد الرئيسي وضع فيه القيم التالية:
+```env
+# Supabase Configuration
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-2. Implement mock API latency simulations to mimic real-world asynchronous threat scanning.
+# VirusTotal v3 API (محرك فحص الروابط والـ IPs)
+VITE_VIRUSTOTAL_API_KEY=your-virustotal-api-key
 
-3. Build responsive layouts first, apply styling and animations, and test RTL/LTR and Dark/Light toggles across all pages.
+# Zavu WhatsApp API Gateway (بوابة إرسال تنبيهات الواتساب)
+VITE_ZAVU_API_KEY=your-zavu-api-key
+VITE_ZAVU_SENDER_ID=your-optional-sender-id
+```
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+### 4. تشغيل خادم التطوير:
+```bash
 npm run dev
 ```
+افتح المتصفح على: `http://localhost:3000`
+
+### 5. فحص وبناء المشروع للإنتاج:
+```bash
+# فحص الأنواع البرمجية
+npx tsc --noEmit
+
+# بناء حزم الإنتاج
+npm run build
+```
+
+---
+
+## 🔒 أمان البيانات وسياسات قاعدة البيانات (Supabase RLS)
+
+تم تأمين جدول الفحوصات `public.scans` وجدول الملفات الشخصية `public.profiles` بسياسات أمان مشددة:
+- **المستخدم العادي:** يملك حق قراءة فحوصاته، وإضافة فحص جديد، وحذف أي فحص من سجله الخاص.
+- **مسؤول النظام (Admin):** يملك حق استعراض سجلات الفحص المجمعة في لوحة الـ SOC وحذف أي سجل غير مرغوب فيه.
+- **حماية المفاتيح:** مفاتيح التكاملات والـ API مشفرة ولا تظهر إلا للمدير المصرح له.
+
+---
+
+## 📝 الترخيص والمساهمة
+
+هذا المشروع متاح لأغراض البحث والتدقيق والأمن السيبراني، ومبني لتقديم تجربة عربية فريدة واحترافية في استخبارات التهديدات. نرحب بأي مساهمات واقتراحات لتطوير المنصة!
